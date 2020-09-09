@@ -51,25 +51,73 @@ export class UserResolver
         return em.find(User, {})
     }
 
-    @Mutation(()=>User)
+    @Query(()=>User, {nullable: true})
+    async user(@Ctx() {em, req}: MyContext)
+    {
+        if(!req.session.userId){
+            return null
+        }
+        const user = await em.findOne(User, {id: req.session.userId})
+        return user
+    }
+
+    @Mutation(()=>UserResponse)
     async register(
-        @Arg('user') user: UserProps,
+        @Arg('input') input: UserProps,
         @Ctx() {em}: MyContext
-    ): Promise<User>
+    ): Promise<UserResponse>
     {
 
-        const hashedPassword = await argon2.hash(user.password)
-        const newUser = em.create(User, {...user, password: hashedPassword})
+        if(input.username.length <= 2){
+            return {
+                errors: [
+                    {
+                        field: 'username',
+                        message: 'Username must be more than 2 characters long'
+                    }
+                ]
+            }
+        }
 
-        await em.persistAndFlush(newUser)
+        if(input.password.length <= 2){
+            return {
+                errors: [
+                    {
+                        field: 'password',
+                        message: 'Password must be more than 2 characters long'
+                    }
+                ]
+            }
+        }
 
-        return newUser
+        const hashedPassword = await argon2.hash(input.password)
+
+        let user = await em.findOne(User, {username: input.username})
+
+        if(!user){
+            user = em.create(User, {...input, password: hashedPassword})
+            await em.persistAndFlush(user)
+            return {
+                user
+            }
+        }else{
+            return {
+                errors: [
+                    {
+                        field: 'username',
+                        message: 'This username is already taken'
+                    }
+                ]
+            }
+        }
+
+        
     }
 
     @Query(()=>UserResponse)
     async login(
         @Arg('input') input: UserProps,
-        @Ctx() {em} : MyContext
+        @Ctx() {em, req} : MyContext
     ): Promise<UserResponse>
     {
         const user = await em.findOne(User, {username: input.username})
@@ -96,6 +144,8 @@ export class UserResolver
                ]
             }
         }
+
+        req.session.userId = user.id
         
         return {
             user
