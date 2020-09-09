@@ -96,7 +96,7 @@ export class UserResolver
                ]
             }
         }
-
+        
         return {
             user
         }

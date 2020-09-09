@@ -29,5 +29,4 @@ export default class User
 
     @Property({type: 'date'})
     updated_at: Date = new Date()
-
 }

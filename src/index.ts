@@ -36,10 +36,10 @@ const main = async () => {
     // console.log(post);
     
     // await orm.em.persistAndFlush(post)
+
     const posts = await orm.em.find(Post, {})
     console.log(posts);
     
-
 }
 
 main().catch(err=>{

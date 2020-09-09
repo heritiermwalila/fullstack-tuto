@@ -1,5 +1,5 @@
 import { MikroORM } from "@mikro-orm/core";
-import {join} from 'path'
+import {join} from 'path';
 import Post from "./entities/Post";
 import User from "./entities/User";
 
