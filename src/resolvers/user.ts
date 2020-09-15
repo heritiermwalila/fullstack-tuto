@@ -43,12 +43,13 @@ class UserResponse
 @Resolver()
 export class UserResolver
 {
-    @Query(()=>[User])
-    users(
+    @Query(()=>[User], {nullable:true})
+    async users(
         @Ctx() {em}: MyContext
     ): Promise<User[]>
     {
-        return em.find(User, {})
+        
+        return await em.find(User, [])
     }
 
     @Query(()=>User, {nullable: true})
@@ -121,6 +122,7 @@ export class UserResolver
     ): Promise<UserResponse>
     {
         const user = await em.findOne(User, {username: input.username})
+       
         if(!user){
             return {
                errors: [
@@ -132,7 +134,7 @@ export class UserResolver
             }
         }
 
-        const passwordMatch = await argon2.verify(user.password, input.password)
+        const passwordMatch = await argon2.verify(input.password, input.password)
 
         if(!passwordMatch){
             return {

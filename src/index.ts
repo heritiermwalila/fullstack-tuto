@@ -12,6 +12,7 @@ import { UserResolver } from './resolvers/user'
 
 import redis from 'redis'
 import session from 'express-session'
+import cors from 'cors'
 import connectRedis from 'connect-redis'
 import { __prod__ } from './constants'
 
@@ -26,6 +27,10 @@ const main = async () => {
 
     const app = express()
 
+    app.use(cors({
+        origin: 'http://localhost:3000',
+        credentials: true
+    }))
     app.use(
         session({
           name: 'qid',
@@ -45,7 +50,7 @@ const main = async () => {
     const apolloServer = new ApolloServer({
         schema: await buildSchema({
             resolvers: [HelloResolver, PostResolver, UserResolver],
-            validate: false
+            // validate: false
         }),
         context: ({req, res}) => ({em: orm.em, req, res})
     })
@@ -56,7 +61,6 @@ const main = async () => {
         console.log('server running on localhost:4000');
         
     })
-
     // const post = orm.em.create(Post, {title: 'Hello my first post'})
     // console.log(post);
     

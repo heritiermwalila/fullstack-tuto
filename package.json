@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "watch": "tsc -w",
-    "create:migration": "mikro-orm migration:create"
+    "create:migration": "mikro-orm migration:create",
+    "start": "nodemon dist"
   },
   "keywords": [],
   "author": "",
@@ -27,6 +28,7 @@
     "apollo-server-express": "^2.17.0",
     "argon2": "^0.27.0",
     "connect-redis": "^5.0.0",
+    "cors": "^2.8.5",
     "express": "^4.17.1",
     "express-session": "^1.17.1",
     "graphql": "^15.3.0",
