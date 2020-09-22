@@ -2,6 +2,7 @@ import { Query, Ctx, Arg, Mutation, InputType, Field, ObjectType, Resolver } fro
 import User from "../entities/User";
 import { MyContext } from "../types";
 import argon2 from 'argon2'
+// import {EntityManager} from '@mikro-orm/mysql'
 
 @InputType()
 class UserProps {
@@ -49,7 +50,7 @@ export class UserResolver
     ): Promise<User[]>
     {
         
-        return await em.find(User, [])
+        return await em.find(User, {})
     }
 
     @Query(()=>User, {nullable: true})
@@ -62,13 +63,13 @@ export class UserResolver
         return user
     }
 
-    @Mutation(()=>UserResponse)
+    @Mutation(()=>UserResponse, {nullable:true})
     async register(
         @Arg('input') input: UserProps,
-        @Ctx() {em}: MyContext
-    ): Promise<UserResponse>
+        @Ctx() {em, req}: MyContext
+    ): Promise<UserResponse | null>
     {
-
+        
         if(input.username.length <= 2){
             return {
                 errors: [
@@ -95,12 +96,18 @@ export class UserResolver
 
         let user = await em.findOne(User, {username: input.username})
 
+        
+
         if(!user){
+           
             user = em.create(User, {...input, password: hashedPassword})
             await em.persistAndFlush(user)
-            return {
-                user
-            }
+            
+            req.session.userId = user.id
+            
+            return {user}
+            
+            
         }else{
             return {
                 errors: [
@@ -111,11 +118,10 @@ export class UserResolver
                 ]
             }
         }
-
         
     }
 
-    @Query(()=>UserResponse)
+    @Mutation(()=>UserResponse)
     async login(
         @Arg('input') input: UserProps,
         @Ctx() {em, req} : MyContext
@@ -134,7 +140,7 @@ export class UserResolver
             }
         }
 
-        const passwordMatch = await argon2.verify(input.password, input.password)
+        const passwordMatch = await argon2.verify(user.password, input.password)
 
         if(!passwordMatch){
             return {
@@ -152,5 +158,14 @@ export class UserResolver
         return {
             user
         }
+    }
+
+    @Query(()=>User)
+    async me(
+        @Ctx(){em, req}: MyContext
+    )
+    {
+        const user = await em.findOne(User, {id: req.session.userId})
+        return user
     }
 }

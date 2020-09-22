@@ -29,7 +29,7 @@ const main = async () => {
 
     app.use(cors({
         origin: 'http://localhost:3000',
-        credentials: true
+        credentials:true
     }))
     app.use(
         session({
@@ -50,7 +50,7 @@ const main = async () => {
     const apolloServer = new ApolloServer({
         schema: await buildSchema({
             resolvers: [HelloResolver, PostResolver, UserResolver],
-            // validate: false
+            validate: false
         }),
         context: ({req, res}) => ({em: orm.em, req, res})
     })
