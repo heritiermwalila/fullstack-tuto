@@ -29,7 +29,8 @@ const main = async () => {
 
     app.use(cors({
         origin: 'http://localhost:3000',
-        credentials:true
+        credentials:true,
+        
     }))
     app.use(
         session({
@@ -55,7 +56,7 @@ const main = async () => {
         context: ({req, res}) => ({em: orm.em, req, res})
     })
 
-    apolloServer.applyMiddleware({app})
+    apolloServer.applyMiddleware({app, cors: {origin: 'http://localhost:3000'}})
 
     app.listen(4000, () => {
         console.log('server running on localhost:4000');
